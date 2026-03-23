@@ -12,90 +12,56 @@
   <header class="header">
     <div class="header-inner">
       <div class="logo">
-        <span class="logo-icon">
-          <svg width="52" height="48" viewBox="0 0 52 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <!-- Book shadow -->
-            <ellipse cx="26" cy="46" rx="18" ry="2.5" fill="rgba(0,0,0,0.15)"/>
-            <!-- Left page (back cover spine area) -->
-            <path d="M4 6 Q4 4 6 4 L25 4 L25 42 L6 42 Q4 42 4 40 Z" fill="#C4955A" stroke="#8B6030" stroke-width="1"/>
-            <!-- Right page (front) -->
-            <path d="M27 4 L46 4 Q48 4 48 6 L48 40 Q48 42 46 42 L27 42 Z" fill="#FBF6EC" stroke="#C9A87A" stroke-width="1"/>
-            <!-- Left page (inner) -->
-            <path d="M6 4 L25 4 L25 42 L6 42 Q4 42 4 40 L4 6 Q4 4 6 4Z" fill="#F5EDD8" stroke="none"/>
-            <!-- Spine / center binding -->
-            <rect x="24" y="3" width="4" height="41" rx="1" fill="#8B6030"/>
-            <line x1="26" y1="3" x2="26" y2="44" stroke="#6B4820" stroke-width="0.8"/>
-            <!-- Book top/bottom edge lines -->
-            <line x1="4" y1="4" x2="48" y2="4" stroke="#8B6030" stroke-width="1.2"/>
-            <line x1="4" y1="42" x2="48" y2="42" stroke="#8B6030" stroke-width="1.2"/>
-
-            <!-- Left page ruled lines -->
-            <line x1="7" y1="12" x2="23" y2="12" stroke="#C9A87A" stroke-width="0.6" opacity="0.6"/>
-            <line x1="7" y1="16" x2="23" y2="16" stroke="#C9A87A" stroke-width="0.6" opacity="0.6"/>
-            <line x1="7" y1="20" x2="23" y2="20" stroke="#C9A87A" stroke-width="0.6" opacity="0.6"/>
-            <line x1="7" y1="24" x2="23" y2="24" stroke="#C9A87A" stroke-width="0.6" opacity="0.6"/>
-            <line x1="7" y1="28" x2="23" y2="28" stroke="#C9A87A" stroke-width="0.6" opacity="0.6"/>
-            <line x1="7" y1="32" x2="23" y2="32" stroke="#C9A87A" stroke-width="0.6" opacity="0.6"/>
-
-            <!-- Right page ruled lines -->
-            <line x1="29" y1="12" x2="45" y2="12" stroke="#C9A87A" stroke-width="0.6" opacity="0.5"/>
-            <line x1="29" y1="16" x2="45" y2="16" stroke="#C9A87A" stroke-width="0.6" opacity="0.5"/>
-            <line x1="29" y1="20" x2="45" y2="20" stroke="#C9A87A" stroke-width="0.6" opacity="0.5"/>
-            <line x1="29" y1="24" x2="45" y2="24" stroke="#C9A87A" stroke-width="0.6" opacity="0.5"/>
-            <line x1="29" y1="28" x2="45" y2="28" stroke="#C9A87A" stroke-width="0.6" opacity="0.5"/>
-            <line x1="29" y1="32" x2="45" y2="32" stroke="#C9A87A" stroke-width="0.6" opacity="0.5"/>
-
-            <!-- Left page: Chinese text -->
-            <text x="8" y="11" font-size="5.5" fill="#5C2A0E" font-family="serif" font-weight="bold">今天</text>
-            <text x="8" y="15.5" font-size="5" fill="#7A6035" font-family="serif">我学习了</text>
-            <text x="8" y="19.5" font-size="5" fill="#7A6035" font-family="serif">很多新词</text>
-            <text x="8" y="23.5" font-size="4.5" fill="#9B7A50" font-family="serif">汉字 语言</text>
-            <text x="8" y="27.5" font-size="4.5" fill="#9B7A50" font-family="serif">学习 日记</text>
-
-            <!-- Right page: English text -->
-            <text x="30" y="11" font-size="5" fill="#5C2A0E" font-family="serif" font-style="italic" font-weight="bold">Dear</text>
-            <text x="29" y="15.5" font-size="4.5" fill="#7A6035" font-family="serif" font-style="italic">Today I</text>
-            <text x="29" y="19.5" font-size="4.5" fill="#7A6035" font-family="serif" font-style="italic">learned so</text>
-            <text x="29" y="23.5" font-size="4.5" fill="#9B7A50" font-family="serif" font-style="italic">much about</text>
-            <text x="29" y="27.5" font-size="4.5" fill="#9B7A50" font-family="serif" font-style="italic">language...</text>
-
-            <!-- Bookmark ribbon -->
-            <polygon points="43,4 46,4 46,16 44.5,14 43,16" fill="#8B2020" opacity="0.85"/>
-          </svg>
-        </span>
         <span class="logo-text">LitDiary</span>
       </div>
       <p class="logo-sub">AI와 함께하는 언어 학습 일기</p>
     </div>
   </header>
 
-  <!-- ── 탭 ── -->
-  <nav class="tab-nav">
-    <button class="tab-btn active" data-tab="write">✏️ 일기 쓰기</button>
-    <button class="tab-btn" data-tab="history">📚 학습 기록</button>
-  </nav>
-
   <main class="main">
 
-    <!-- ════════════════════════════════════════
-         TAB: 일기 쓰기
-    ════════════════════════════════════════ -->
-    <section id="tab-write" class="tab-content active">
+    <section>
 
       <!-- 입력 카드 -->
       <div class="card write-card">
         <div class="card-header">
           <h2>오늘의 일기</h2>
-          <div class="lang-selector">
-            <button class="lang-btn active" data-lang="english">🇺🇸 English</button>
-            <button class="lang-btn" data-lang="chinese">🇨🇳 中文</button>
+        </div>
+
+        <div class="lang-switcher">
+          <button class="lang-btn active" data-lang="english">
+            <span class="lang-flag">🇺🇸</span>
+            <span class="lang-label">English</span>
+            <span class="lang-sub">영어로 쓰기</span>
+          </button>
+          <button class="lang-btn" data-lang="chinese">
+            <span class="lang-flag">🇨🇳</span>
+            <span class="lang-label">中文</span>
+            <span class="lang-sub">중국어로 쓰기</span>
+          </button>
+        </div>
+
+        <!-- 모드 선택 -->
+        <div class="mode-switcher">
+          <button class="mode-btn active" data-mode="free">✍️ 자유 쓰기</button>
+          <button class="mode-btn" data-mode="beginner">🌱 주제별 쓰기</button>
+        </div>
+
+        <!-- 초보 모드: 주제 선택 + 힌트 -->
+        <div id="beginner-section" class="hidden">
+          <p class="topic-guide">주제를 골라보세요</p>
+          <div id="topic-grid" class="topic-grid"></div>
+          <div id="hint-section" class="hint-section hidden">
+            <p class="hint-label">💡 단어를 클릭하면 입력창에 추가돼요</p>
+            <div id="hint-words" class="hint-words"></div>
           </div>
+          <p class="sentence-guide">3문장 정도 써보세요 ✨</p>
         </div>
 
         <textarea
           id="diary-input"
           class="diary-textarea"
-          placeholder="오늘 있었던 일을 영어나 중국어로 자유롭게 써보세요..."
+          placeholder="오늘 있었던 일을 영어로 자유롭게 써보세요..."
           rows="8"
         ></textarea>
 
@@ -157,18 +123,6 @@
           <span id="save-msg" class="save-msg hidden">✅ 저장되었습니다!</span>
         </div>
 
-      </div>
-    </section>
-
-    <!-- ════════════════════════════════════════
-         TAB: 학습 기록
-    ════════════════════════════════════════ -->
-    <section id="tab-history" class="tab-content hidden">
-      <div class="card">
-        <h2 class="section-title">📚 나의 학습 기록</h2>
-        <div id="history-list" class="history-list">
-          <p class="empty-msg">저장된 일기가 없습니다.</p>
-        </div>
       </div>
     </section>
 

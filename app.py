@@ -8,6 +8,7 @@ from openai import OpenAI
 from dotenv import load_dotenv
 import os
 import json
+import sqlite3
 from datetime import datetime
 
 load_dotenv()
@@ -21,21 +22,93 @@ client = OpenAI(
 
 MODEL = "openai/gpt-4o-mini"
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DIARIES_FILE = os.path.join(BASE_DIR, "data", "diaries.json")
+DATABASE_URL = os.getenv("DATABASE_URL")  # Render PostgreSQL
+DB_FILE = os.path.join(BASE_DIR, "data", "diaries.db")  # 로컬 SQLite
+
+
+# ─── DB 초기화 ──────────────────────────────────────────────────────────────
+
+def init_db():
+    if DATABASE_URL:
+        import psycopg2
+        url = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+        conn = psycopg2.connect(url)
+        conn.cursor().execute('''
+            CREATE TABLE IF NOT EXISTS diaries (
+                id SERIAL PRIMARY KEY,
+                date TEXT NOT NULL,
+                language TEXT NOT NULL,
+                text TEXT NOT NULL,
+                analysis TEXT NOT NULL
+            )
+        ''')
+        conn.commit()
+        conn.close()
+    else:
+        os.makedirs(os.path.dirname(DB_FILE), exist_ok=True)
+        conn = sqlite3.connect(DB_FILE)
+        conn.execute('''
+            CREATE TABLE IF NOT EXISTS diaries (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                date TEXT NOT NULL,
+                language TEXT NOT NULL,
+                text TEXT NOT NULL,
+                analysis TEXT NOT NULL
+            )
+        ''')
+        conn.commit()
+        conn.close()
+
+init_db()
 
 
 # ─── 저장 유틸 ──────────────────────────────────────────────────────────────
 
 def load_diaries():
-    if not os.path.exists(DIARIES_FILE):
-        return []
-    with open(DIARIES_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
+    if DATABASE_URL:
+        import psycopg2, psycopg2.extras
+        url = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+        conn = psycopg2.connect(url)
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur.execute("SELECT * FROM diaries ORDER BY id")
+        rows = [dict(r) for r in cur.fetchall()]
+        conn.close()
+    else:
+        conn = sqlite3.connect(DB_FILE)
+        conn.row_factory = sqlite3.Row
+        rows = [dict(r) for r in conn.execute("SELECT * FROM diaries ORDER BY id").fetchall()]
+        conn.close()
 
-def save_diaries(diaries):
-    os.makedirs(os.path.dirname(DIARIES_FILE), exist_ok=True)
-    with open(DIARIES_FILE, "w", encoding="utf-8") as f:
-        json.dump(diaries, f, ensure_ascii=False, indent=2)
+    for r in rows:
+        if isinstance(r["analysis"], str):
+            r["analysis"] = json.loads(r["analysis"])
+    return rows
+
+
+def save_diary(date, language, text, analysis):
+    analysis_str = json.dumps(analysis, ensure_ascii=False)
+    if DATABASE_URL:
+        import psycopg2
+        url = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+        conn = psycopg2.connect(url)
+        cur = conn.cursor()
+        cur.execute(
+            "INSERT INTO diaries (date, language, text, analysis) VALUES (%s, %s, %s, %s) RETURNING id",
+            (date, language, text, analysis_str)
+        )
+        new_id = cur.fetchone()[0]
+        conn.commit()
+        conn.close()
+    else:
+        conn = sqlite3.connect(DB_FILE)
+        cur = conn.execute(
+            "INSERT INTO diaries (date, language, text, analysis) VALUES (?, ?, ?, ?)",
+            (date, language, text, analysis_str)
+        )
+        new_id = cur.lastrowid
+        conn.commit()
+        conn.close()
+    return new_id
 
 
 # ─── 라우트 ─────────────────────────────────────────────────────────────────
@@ -250,26 +323,19 @@ def analyze():
 
 @app.route("/diaries", methods=["GET"])
 def get_diaries():
-    diaries = load_diaries()
-    return jsonify(diaries)
+    return jsonify(load_diaries())
 
 
 @app.route("/diaries", methods=["POST"])
-def save_diary():
+def save_diary_route():
     data = request.json
-    diaries = load_diaries()
+    date = datetime.now().strftime("%Y-%m-%d %H:%M")
+    language = data.get("language")
+    text = data.get("text")
+    analysis = data.get("analysis")
 
-    entry = {
-        "id": len(diaries) + 1,
-        "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
-        "language": data.get("language"),
-        "text": data.get("text"),
-        "analysis": data.get("analysis")
-    }
-
-    diaries.append(entry)
-    save_diaries(diaries)
-
+    new_id = save_diary(date, language, text, analysis)
+    entry = {"id": new_id, "date": date, "language": language, "text": text, "analysis": analysis}
     return jsonify({"success": True, "entry": entry})
 
 

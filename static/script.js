@@ -1,7 +1,29 @@
 /* ── 상태 ──────────────────────────────────────── */
 let selectedLang = "english";
+let selectedMode = "free";
+let selectedTopic = null;
 let currentAnalysis = null;
 let currentText = "";
+
+/* ── 주제 & 힌트 데이터 ─────────────────────────── */
+const TOPICS = {
+  english: [
+    { id: "my-day",   emoji: "☀️",  label: "My Day",      hints: ["woke up", "had breakfast", "went to", "felt", "because"] },
+    { id: "weekend",  emoji: "🎉",  label: "Weekend",     hints: ["plan to", "want to", "with friends", "excited", "relax"] },
+    { id: "food",     emoji: "🍽️", label: "Food",        hints: ["delicious", "tried", "tasted like", "cooked", "restaurant"] },
+    { id: "weather",  emoji: "🌤️", label: "Weather",     hints: ["sunny", "cold", "it rained", "warm", "cloudy"] },
+    { id: "feelings", emoji: "💭",  label: "Feelings",    hints: ["I felt", "happy", "nervous", "proud", "grateful"] },
+    { id: "school",   emoji: "📚",  label: "School/Work", hints: ["learned", "difficult", "my teacher", "classmates", "homework"] },
+  ],
+  chinese: [
+    { id: "my-day",   emoji: "☀️",  label: "我的一天",   hints: ["早上", "吃饭", "去了", "感觉", "因为"] },
+    { id: "weekend",  emoji: "🎉",  label: "周末计划",   hints: ["打算", "想要", "和朋友", "开心", "休息"] },
+    { id: "food",     emoji: "🍽️", label: "美食",       hints: ["好吃", "尝试了", "味道", "做饭", "餐厅"] },
+    { id: "weather",  emoji: "🌤️", label: "天气",       hints: ["晴天", "冷", "下雨了", "暖和", "多云"] },
+    { id: "feelings", emoji: "💭",  label: "心情",       hints: ["我感到", "高兴", "紧张", "骄傲", "感谢"] },
+    { id: "school",   emoji: "📚",  label: "学校/工作",  hints: ["学到了", "困难", "老师", "同学", "作业"] },
+  ]
+};
 
 /* ── DOM 참조 ──────────────────────────────────── */
 const diaryInput    = document.getElementById("diary-input");
@@ -13,16 +35,6 @@ const feedbackSec   = document.getElementById("feedback-section");
 const saveBtn       = document.getElementById("save-btn");
 const saveMsg       = document.getElementById("save-msg");
 
-/* ── 탭 전환 ───────────────────────────────────── */
-document.querySelectorAll(".tab-btn").forEach(btn => {
-  btn.addEventListener("click", () => {
-    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-    document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
-    btn.classList.add("active");
-    document.getElementById(`tab-${btn.dataset.tab}`).classList.add("active");
-    if (btn.dataset.tab === "history") loadHistory();
-  });
-});
 
 /* ── 언어 선택 ─────────────────────────────────── */
 document.querySelectorAll(".lang-btn").forEach(btn => {
@@ -30,11 +42,97 @@ document.querySelectorAll(".lang-btn").forEach(btn => {
     document.querySelectorAll(".lang-btn").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
     selectedLang = btn.dataset.lang;
+    selectedTopic = null;
+    if (selectedMode === "beginner") renderTopics();
+    updatePlaceholder();
+  });
+});
+
+/* ── 모드 선택 ─────────────────────────────────── */
+document.querySelectorAll(".mode-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".mode-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    selectedMode = btn.dataset.mode;
+    selectedTopic = null;
+
+    const beginnerSection = document.getElementById("beginner-section");
+    if (selectedMode === "beginner") {
+      beginnerSection.classList.remove("hidden");
+      renderTopics();
+    } else {
+      beginnerSection.classList.add("hidden");
+      document.getElementById("hint-section").classList.add("hidden");
+    }
+    updatePlaceholder();
+  });
+});
+
+/* ── 주제 렌더링 ────────────────────────────────── */
+function renderTopics() {
+  const grid = document.getElementById("topic-grid");
+  grid.innerHTML = "";
+  TOPICS[selectedLang].forEach(topic => {
+    const card = document.createElement("button");
+    card.className = "topic-card" + (selectedTopic?.id === topic.id ? " active" : "");
+    card.innerHTML = `<span class="topic-emoji">${topic.emoji}</span><span class="topic-name">${topic.label}</span>`;
+    card.addEventListener("click", () => {
+      selectedTopic = topic;
+      renderTopics();
+      renderHints(topic.hints);
+      updatePlaceholder();
+    });
+    grid.appendChild(card);
+  });
+}
+
+/* ── 힌트 단어 렌더링 ───────────────────────────── */
+function renderHints(hints) {
+  const section = document.getElementById("hint-section");
+  const container = document.getElementById("hint-words");
+  container.innerHTML = "";
+  hints.forEach(word => {
+    const chip = document.createElement("button");
+    chip.className = "hint-chip";
+    chip.textContent = word;
+    chip.addEventListener("click", () => {
+      if (chip.classList.contains("used")) return;
+      insertAtCursor(diaryInput, word + " ");
+      chip.classList.add("used");
+      charCount.textContent = diaryInput.value.length;
+      diaryInput.focus();
+    });
+    container.appendChild(chip);
+  });
+  section.classList.remove("hidden");
+}
+
+/* ── 커서 위치에 텍스트 삽입 ────────────────────── */
+function insertAtCursor(el, text) {
+  const start = el.selectionStart;
+  const end = el.selectionEnd;
+  el.value = el.value.slice(0, start) + text + el.value.slice(end);
+  el.selectionStart = el.selectionEnd = start + text.length;
+}
+
+/* ── 플레이스홀더 업데이트 ──────────────────────── */
+function updatePlaceholder() {
+  if (selectedMode === "free") {
     diaryInput.placeholder = selectedLang === "english"
       ? "오늘 있었던 일을 영어로 자유롭게 써보세요..."
       : "오늘 있었던 일을 중국어로 자유롭게 써보세요...";
-  });
-});
+  } else {
+    if (!selectedTopic) {
+      diaryInput.placeholder = selectedLang === "english"
+        ? "위에서 주제를 고르면 힌트 단어가 나와요!"
+        : "위에서 주제를 고르면 힌트 단어가 나와요!";
+    } else {
+      diaryInput.placeholder = selectedLang === "english"
+        ? `'${selectedTopic.label}' 주제로 3문장 정도 써보세요. 힌트 단어를 활용해봐요!`
+        : `'${selectedTopic.label}' 주제로 3문장 정도 써보세요. 힌트 단어를 활용해봐요!`;
+    }
+  }
+}
 
 /* ── 글자 수 카운터 ────────────────────────────── */
 diaryInput.addEventListener("input", () => {
@@ -196,70 +294,75 @@ document.getElementById("check-quiz-btn").addEventListener("click", () => {
   });
 });
 
+/* ── LocalStorage 유틸 ──────────────────────────── */
+const STORAGE_KEY = "litdiary_entries";
+
+function getEntries() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
+  catch { return []; }
+}
+
+function saveEntry(entry) {
+  const entries = getEntries();
+  entries.push(entry);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+}
+
+function deleteEntry(id) {
+  const entries = getEntries().filter(e => e.id !== id);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+}
+
 /* ── 일기 저장 ─────────────────────────────────── */
-saveBtn.addEventListener("click", async () => {
+saveBtn.addEventListener("click", () => {
   if (!currentAnalysis) return;
 
-  try {
-    const res = await fetch("/diaries", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        language: selectedLang,
-        text: currentText,
-        analysis: currentAnalysis
-      })
-    });
+  const entry = {
+    id: Date.now(),
+    date: new Date().toLocaleString("ko-KR", { year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit" }),
+    language: selectedLang,
+    text: currentText,
+    analysis: currentAnalysis
+  };
 
-    if (!res.ok) throw new Error("저장 실패");
-
-    saveMsg.classList.remove("hidden");
-    saveBtn.disabled = true;
-    setTimeout(() => {
-      saveMsg.classList.add("hidden");
-      saveBtn.disabled = false;
-    }, 3000);
-  } catch (e) {
-    alert("저장 중 오류가 발생했습니다.");
-  }
+  saveEntry(entry);
+  saveMsg.classList.remove("hidden");
+  saveBtn.disabled = true;
+  setTimeout(() => {
+    saveMsg.classList.add("hidden");
+    saveBtn.disabled = false;
+  }, 3000);
 });
 
 /* ── 히스토리 로드 ──────────────────────────────── */
-async function loadHistory() {
+function loadHistory() {
   const container = document.getElementById("history-list");
-  container.innerHTML = "<p class='empty-msg'>불러오는 중...</p>";
+  const list = getEntries();
 
-  try {
-    const res  = await fetch("/diaries");
-    const list = await res.json();
-
-    if (!list.length) {
-      container.innerHTML = "<p class='empty-msg'>저장된 일기가 없습니다.</p>";
-      return;
-    }
-
-    container.innerHTML = "";
-    [...list].reverse().forEach(entry => {
-      const div = document.createElement("div");
-      div.className = "history-item";
-      const langLabel = entry.language === "english" ? "🇺🇸 English" : "🇨🇳 中文";
-      const score = entry.analysis?.score ?? "--";
-      const preview = (entry.text || "").slice(0, 80) + (entry.text?.length > 80 ? "..." : "");
-
-      div.innerHTML = `
-        <div class="history-top">
-          <span class="history-date">${entry.date}</span>
-          <span class="history-lang">${langLabel}</span>
-        </div>
-        <div class="history-preview">${escHtml(preview)}</div>
-        <div class="history-score">점수: ${score}점 · ${entry.analysis?.level ?? ""}</div>
-      `;
-      div.addEventListener("click", () => showHistoryModal(entry));
-      container.appendChild(div);
-    });
-  } catch {
-    container.innerHTML = "<p class='empty-msg'>불러오기 실패. 다시 시도해주세요.</p>";
+  if (!list.length) {
+    container.innerHTML = "<p class='empty-msg'>저장된 일기가 없습니다.</p>";
+    return;
   }
+
+  container.innerHTML = "";
+  [...list].reverse().forEach(entry => {
+    const div = document.createElement("div");
+    div.className = "history-item";
+    const langLabel = entry.language === "english" ? "🇺🇸 English" : "🇨🇳 中文";
+    const score = entry.analysis?.score ?? "--";
+    const preview = (entry.text || "").slice(0, 80) + (entry.text?.length > 80 ? "..." : "");
+
+    div.innerHTML = `
+      <div class="history-top">
+        <span class="history-date">${entry.date}</span>
+        <span class="history-lang">${langLabel}</span>
+      </div>
+      <div class="history-preview">${escHtml(preview)}</div>
+      <div class="history-score">점수: ${score}점 · ${entry.analysis?.level ?? ""}</div>
+    `;
+    div.addEventListener("click", () => showHistoryModal(entry));
+    container.appendChild(div);
+  });
 }
 
 /* ── 히스토리 모달 ──────────────────────────────── */
@@ -290,7 +393,10 @@ function showHistoryModal(entry) {
           <strong>${entry.date}</strong>
           &nbsp;<span class="badge badge-${a.level}">${a.level ?? ""}</span>
         </div>
-        <button class="modal-close">✕</button>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button class="modal-delete" title="삭제" style="background:none;border:none;font-size:1rem;cursor:pointer;color:var(--muted);padding:4px 8px;border-radius:6px;transition:all .2s;">🗑️</button>
+          <button class="modal-close" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--muted);">✕</button>
+        </div>
       </div>
       <p style="font-size:.85rem;color:var(--muted);margin-bottom:12px;">
         ${entry.language === "english" ? "🇺🇸 English" : "🇨🇳 中文"} &nbsp;·&nbsp; 점수: <strong>${a.score ?? "--"}점</strong>
@@ -307,6 +413,12 @@ function showHistoryModal(entry) {
   `;
 
   overlay.querySelector(".modal-close").addEventListener("click", () => overlay.remove());
+  overlay.querySelector(".modal-delete").addEventListener("click", () => {
+    if (!confirm("이 일기를 삭제할까요?")) return;
+    deleteEntry(entry.id);
+    overlay.remove();
+    loadHistory();
+  });
   overlay.addEventListener("click", e => { if (e.target === overlay) overlay.remove(); });
   document.body.appendChild(overlay);
 }
