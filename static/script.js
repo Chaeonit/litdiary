@@ -43,20 +43,68 @@ function getTodayQuestion(level) {
 /* ── 주제 & 힌트 데이터 ─────────────────────────── */
 const TOPICS = {
   english: [
-    { id: "my-day",   emoji: "☀️",  label: "My Day",      hints: ["woke up", "had breakfast", "went to", "felt", "because"] },
-    { id: "weekend",  emoji: "🎉",  label: "Weekend",     hints: ["plan to", "want to", "with friends", "excited", "relax"] },
-    { id: "food",     emoji: "🍽️", label: "Food",        hints: ["delicious", "tried", "tasted like", "cooked", "restaurant"] },
-    { id: "weather",  emoji: "🌤️", label: "Weather",     hints: ["sunny", "cold", "it rained", "warm", "cloudy"] },
-    { id: "feelings", emoji: "💭",  label: "Feelings",    hints: ["I felt", "happy", "nervous", "proud", "grateful"] },
-    { id: "school",   emoji: "📚",  label: "School/Work", hints: ["learned", "difficult", "my teacher", "classmates", "homework"] },
+    { id: "my-day",   emoji: "☀️",  label: "My Day",      hints: {
+      easy:   ["woke up", "went to", "ate", "came home", "today"],
+      medium: ["had breakfast", "felt tired", "in the morning", "after school", "before bed"],
+      hard:   ["was exhausted", "realized that", "unexpectedly", "throughout the day", "turned out to be"]
+    }},
+    { id: "weekend",  emoji: "🎉",  label: "Weekend",     hints: {
+      easy:   ["stayed home", "went out", "had fun", "with friends", "watched TV"],
+      medium: ["plan to", "want to", "excited about", "spent time", "next weekend"],
+      hard:   ["looking forward to", "couldn't wait to", "made the most of", "ended up", "worthwhile"]
+    }},
+    { id: "food",     emoji: "🍽️", label: "Food",        hints: {
+      easy:   ["delicious", "ate", "liked", "tried", "yummy"],
+      medium: ["tasted like", "cooked", "restaurant", "for the first time", "recommended"],
+      hard:   ["reminded me of", "couldn't resist", "the texture was", "rich flavor", "would definitely"]
+    }},
+    { id: "weather",  emoji: "🌤️", label: "Weather",     hints: {
+      easy:   ["sunny", "cold", "hot", "rainy", "windy"],
+      medium: ["it rained", "warm outside", "felt chilly", "cloudy all day", "nice weather"],
+      hard:   ["temperature dropped", "despite the weather", "refreshing breeze", "gloomy atmosphere", "unexpectedly"]
+    }},
+    { id: "feelings", emoji: "💭",  label: "Feelings",    hints: {
+      easy:   ["happy", "sad", "tired", "excited", "nervous"],
+      medium: ["I felt", "proud of", "grateful for", "worried about", "relieved"],
+      hard:   ["overwhelmed by", "mixed feelings", "couldn't help but", "deeply touched", "surprisingly"]
+    }},
+    { id: "school",   emoji: "📚",  label: "School/Work", hints: {
+      easy:   ["learned", "studied", "hard", "fun", "homework"],
+      medium: ["my teacher", "classmates", "difficult", "presentation", "assignment"],
+      hard:   ["struggled with", "finally understood", "made progress on", "collaborated with", "came to realize"]
+    }},
   ],
   chinese: [
-    { id: "my-day",   emoji: "☀️",  label: "我的一天",   hints: ["早上", "吃饭", "去了", "感觉", "因为"] },
-    { id: "weekend",  emoji: "🎉",  label: "周末计划",   hints: ["打算", "想要", "和朋友", "开心", "休息"] },
-    { id: "food",     emoji: "🍽️", label: "美食",       hints: ["好吃", "尝试了", "味道", "做饭", "餐厅"] },
-    { id: "weather",  emoji: "🌤️", label: "天气",       hints: ["晴天", "冷", "下雨了", "暖和", "多云"] },
-    { id: "feelings", emoji: "💭",  label: "心情",       hints: ["我感到", "高兴", "紧张", "骄傲", "感谢"] },
-    { id: "school",   emoji: "📚",  label: "学校/工作",  hints: ["学到了", "困难", "老师", "同学", "作业"] },
+    { id: "my-day",   emoji: "☀️",  label: "我的一天",   hints: {
+      easy:   ["早上", "去了", "吃饭", "回家", "睡觉"],
+      medium: ["感觉", "因为", "之后", "在学校", "有点累"],
+      hard:   ["没想到", "意识到", "整整一天", "结果发现", "让我想起"]
+    }},
+    { id: "weekend",  emoji: "🎉",  label: "周末计划",   hints: {
+      easy:   ["休息", "出去玩", "看电视", "在家", "开心"],
+      medium: ["打算", "想要", "和朋友", "期待", "下周末"],
+      hard:   ["迫不及待", "充分利用", "最终决定", "值得", "难得的机会"]
+    }},
+    { id: "food",     emoji: "🍽️", label: "美食",       hints: {
+      easy:   ["好吃", "吃了", "喜欢", "尝试了", "很香"],
+      medium: ["味道", "做饭", "餐厅", "第一次", "推荐"],
+      hard:   ["让我想起", "忍不住", "口感", "回味无穷", "一定会再来"]
+    }},
+    { id: "weather",  emoji: "🌤️", label: "天气",       hints: {
+      easy:   ["晴天", "冷", "热", "下雨", "刮风"],
+      medium: ["暖和", "多云", "感觉凉快", "天气不错", "下了一天雨"],
+      hard:   ["气温骤降", "尽管天气不好", "清爽的微风", "阴沉的气氛", "突然"]
+    }},
+    { id: "feelings", emoji: "💭",  label: "心情",       hints: {
+      easy:   ["高兴", "难过", "累", "兴奋", "紧张"],
+      medium: ["我感到", "为...骄傲", "感谢", "担心", "松了口气"],
+      hard:   ["复杂的心情", "忍不住", "出乎意料", "深深地", "被...感动"]
+    }},
+    { id: "school",   emoji: "📚",  label: "学校/工作",  hints: {
+      easy:   ["学到了", "学习", "困难", "有趣", "作业"],
+      medium: ["老师", "同学", "很难", "演讲", "任务"],
+      hard:   ["终于明白了", "取得了进步", "与...合作", "意识到", "努力克服"]
+    }},
   ]
 };
 
@@ -147,9 +195,10 @@ function showGuidedDetail(level) {
   qBox.querySelector(".sq-text").textContent = getTodayQuestion(level);
   document.getElementById("guided-sentence-guide").textContent =
     GUIDED_SENTENCES[level] + " 써보세요 ✨";
-  document.getElementById("guided-hint-section").classList.add("hidden");
   detail.classList.remove("hidden");
   renderGuidedTopics();
+  if (selectedTopic) renderGuidedHints(selectedTopic.hints[level]);
+  else document.getElementById("guided-hint-section").classList.add("hidden");
 }
 
 /* ── 가이드 모드 주제 렌더링 ─────────────────────── */
@@ -163,7 +212,7 @@ function renderGuidedTopics() {
     card.addEventListener("click", () => {
       selectedTopic = topic;
       renderGuidedTopics();
-      renderGuidedHints(topic.hints);
+      renderGuidedHints(topic.hints[selectedDifficulty]);
       updatePlaceholder();
     });
     grid.appendChild(card);
