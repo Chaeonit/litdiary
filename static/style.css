@@ -138,7 +138,6 @@ body {
   position: relative;
 }
 .lang-btn:last-child { border-right: none; }
-.lang-flag { font-size: 1.6rem; line-height: 1; }
 .lang-label {
   font-size: 1rem;
   font-weight: 700;
@@ -234,14 +233,14 @@ body {
   color: var(--text);
   letter-spacing: 0.3px;
 }
-.diff-question {
+.diff-sent {
   font-size: 0.75rem;
   color: var(--muted);
   line-height: 1.45;
-  word-break: keep-all;
+  font-weight: 400;
 }
 .difficulty-card.active .diff-label { color: var(--green-dk); }
-.difficulty-card.active .diff-question { color: var(--brown); }
+.difficulty-card.active .diff-sent { color: var(--brown); }
 
 .selected-question {
   display: flex;
@@ -264,7 +263,53 @@ body {
   line-height: 1.6;
 }
 
-/* ── 주제 선택 (초보 모드) ───────────────────── */
+/* ── 한 줄 시작 모드 ─────────────────────────── */
+.oneline-prompts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+@media (max-width: 480px) { .oneline-prompts { grid-template-columns: 1fr; } }
+
+.oneline-prompt-btn {
+  padding: 18px 16px;
+  border: var(--glass-border);
+  border-radius: 12px;
+  background: rgba(255,255,255,.35);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font-family: 'Lato', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text);
+  cursor: pointer;
+  transition: all .2s;
+  text-align: center;
+  line-height: 1.5;
+}
+.oneline-prompt-btn:hover {
+  background: rgba(253,232,216,.55);
+  border-color: rgba(212,98,42,.40);
+  transform: translateY(-1px);
+}
+.oneline-prompt-btn.active {
+  background: rgba(253,232,216,.70);
+  border-color: rgba(212,98,42,.55);
+  color: var(--green-dk);
+  box-shadow: 0 4px 12px rgba(212,98,42,.15);
+}
+
+.oneline-guide {
+  font-size: 0.8rem;
+  color: var(--green-md);
+  font-weight: 700;
+  margin-bottom: 10px;
+  text-align: center;
+  opacity: .8;
+}
+
+/* ── 주제 선택 (가이드 모드) ───────────────────── */
 .topic-guide {
   font-size: 0.82rem;
   color: var(--muted);
@@ -353,6 +398,11 @@ body {
   font-weight: 700;
   margin-bottom: 10px;
   text-align: right;
+}
+
+/* ── guided-detail 등장 ──────────────────────── */
+#guided-detail:not(.hidden) {
+  animation: card-in .3s ease-out both;
 }
 
 /* ── write-card 상태 디자인 ──────────────────── */

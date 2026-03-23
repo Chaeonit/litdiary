@@ -1,8 +1,9 @@
 /* ── 상태 ──────────────────────────────────────── */
 let selectedLang = "english";
-let selectedMode = "free";
+let selectedMode = "oneline";
 let selectedTopic = null;
 let selectedDifficulty = null;
+let selectedOnelinePrompt = null;
 let currentAnalysis = null;
 let currentText = "";
 
@@ -89,7 +90,7 @@ document.querySelectorAll(".lang-btn").forEach(btn => {
     btn.classList.add("active");
     selectedLang = btn.dataset.lang;
     selectedTopic = null;
-    if (selectedMode === "beginner") renderTopics();
+    if (selectedMode === "guided" && selectedDifficulty) renderGuidedTopics();
     updatePlaceholder();
   });
 });
@@ -102,53 +103,58 @@ document.querySelectorAll(".mode-btn").forEach(btn => {
     selectedMode = btn.dataset.mode;
     selectedTopic = null;
     selectedDifficulty = null;
+    selectedOnelinePrompt = null;
 
-    const beginnerSection = document.getElementById("beginner-section");
-    const questionSection = document.getElementById("question-section");
+    const onelineSection = document.getElementById("oneline-section");
+    const guidedSection  = document.getElementById("guided-section");
 
-    beginnerSection.classList.add("hidden");
-    questionSection.classList.add("hidden");
-    document.getElementById("hint-section").classList.add("hidden");
-    document.getElementById("selected-question").classList.add("hidden");
+    onelineSection.classList.add("hidden");
+    guidedSection.classList.add("hidden");
+    document.getElementById("guided-detail").classList.add("hidden");
+    document.getElementById("guided-hint-section").classList.add("hidden");
+    document.querySelectorAll(".oneline-prompt-btn").forEach(b => b.classList.remove("active"));
 
-    if (selectedMode === "beginner") {
-      beginnerSection.classList.remove("hidden");
-      renderTopics();
-    } else if (selectedMode === "question") {
-      questionSection.classList.remove("hidden");
-      renderDifficultyCards();
+    if (selectedMode === "oneline") {
+      onelineSection.classList.remove("hidden");
+    } else if (selectedMode === "guided") {
+      guidedSection.classList.remove("hidden");
+      renderGuidedDiffCards();
     }
     updatePlaceholder();
   });
 });
 
-/* ── 난이도 카드 렌더링 ──────────────────────────── */
-function renderDifficultyCards() {
-  ["easy", "medium", "hard"].forEach(level => {
-    document.getElementById(`q-${level}`).textContent = getTodayQuestion(level);
-  });
+/* ── 가이드 모드 난이도 카드 ─────────────────────── */
+const GUIDED_SENTENCES = { easy: "1~2문장", medium: "2~3문장", hard: "3~5문장" };
 
-  document.querySelectorAll(".difficulty-card").forEach(card => {
+function renderGuidedDiffCards() {
+  document.querySelectorAll("#guided-section .difficulty-card").forEach(card => {
     card.classList.toggle("active", card.dataset.level === selectedDifficulty);
     card.onclick = () => {
       selectedDifficulty = card.dataset.level;
-      renderDifficultyCards();
-      showSelectedQuestion(selectedDifficulty);
+      selectedTopic = null;
+      renderGuidedDiffCards();
+      showGuidedDetail(selectedDifficulty);
       updatePlaceholder();
     };
   });
 }
 
-function showSelectedQuestion(level) {
-  const box = document.getElementById("selected-question");
-  box.querySelector(".sq-icon").textContent = DIFF_ICONS[level];
-  box.querySelector(".sq-text").textContent = getTodayQuestion(level);
-  box.classList.remove("hidden");
+function showGuidedDetail(level) {
+  const detail = document.getElementById("guided-detail");
+  const qBox   = document.getElementById("guided-question-box");
+  qBox.querySelector(".sq-icon").textContent = DIFF_ICONS[level];
+  qBox.querySelector(".sq-text").textContent = getTodayQuestion(level);
+  document.getElementById("guided-sentence-guide").textContent =
+    GUIDED_SENTENCES[level] + " 써보세요 ✨";
+  document.getElementById("guided-hint-section").classList.add("hidden");
+  detail.classList.remove("hidden");
+  renderGuidedTopics();
 }
 
-/* ── 주제 렌더링 ────────────────────────────────── */
-function renderTopics() {
-  const grid = document.getElementById("topic-grid");
+/* ── 가이드 모드 주제 렌더링 ─────────────────────── */
+function renderGuidedTopics() {
+  const grid = document.getElementById("guided-topic-grid");
   grid.innerHTML = "";
   TOPICS[selectedLang].forEach(topic => {
     const card = document.createElement("button");
@@ -156,18 +162,18 @@ function renderTopics() {
     card.innerHTML = `<span class="topic-emoji">${topic.emoji}</span><span class="topic-name">${topic.label}</span>`;
     card.addEventListener("click", () => {
       selectedTopic = topic;
-      renderTopics();
-      renderHints(topic.hints);
+      renderGuidedTopics();
+      renderGuidedHints(topic.hints);
       updatePlaceholder();
     });
     grid.appendChild(card);
   });
 }
 
-/* ── 힌트 단어 렌더링 ───────────────────────────── */
-function renderHints(hints) {
-  const section = document.getElementById("hint-section");
-  const container = document.getElementById("hint-words");
+/* ── 가이드 모드 힌트 단어 ───────────────────────── */
+function renderGuidedHints(hints) {
+  const section   = document.getElementById("guided-hint-section");
+  const container = document.getElementById("guided-hint-words");
   container.innerHTML = "";
   hints.forEach(word => {
     const chip = document.createElement("button");
@@ -196,18 +202,37 @@ function insertAtCursor(el, text) {
 /* ── 플레이스홀더 업데이트 ──────────────────────── */
 function updatePlaceholder() {
   const lang = selectedLang === "english" ? "영어" : "중국어";
-  if (selectedMode === "free") {
+  if (selectedMode === "oneline") {
+    const prompts = {
+      feeling: `오늘 기분을 ${lang}로 한 문장으로 써보세요...`,
+      event:   `오늘 있었던 일을 ${lang}로 한 문장으로 써보세요...`
+    };
+    diaryInput.placeholder = selectedOnelinePrompt
+      ? prompts[selectedOnelinePrompt]
+      : `${lang}로 한 문장만 써도 충분해요!`;
+  } else if (selectedMode === "guided") {
+    if (!selectedDifficulty) {
+      diaryInput.placeholder = "위에서 난이도를 고르면 질문과 힌트가 나와요!";
+    } else if (!selectedTopic) {
+      diaryInput.placeholder = `위 질문에 답하거나, 주제를 골라서 ${lang}로 써보세요...`;
+    } else {
+      diaryInput.placeholder = `'${selectedTopic.label}' 주제로 ${GUIDED_SENTENCES[selectedDifficulty]} 써보세요!`;
+    }
+  } else {
     diaryInput.placeholder = `오늘 있었던 일을 ${lang}로 자유롭게 써보세요...`;
-  } else if (selectedMode === "beginner") {
-    diaryInput.placeholder = selectedTopic
-      ? `'${selectedTopic.label}' 주제로 3문장 정도 써보세요. 힌트 단어를 활용해봐요!`
-      : "위에서 주제를 고르면 힌트 단어가 나와요!";
-  } else if (selectedMode === "question") {
-    diaryInput.placeholder = selectedDifficulty
-      ? `위 질문에 대한 답을 ${lang}로 써보세요...`
-      : "난이도를 선택하면 오늘의 질문이 나와요!";
   }
 }
+
+/* ── 한 줄 시작 프롬프트 ───────────────────────── */
+document.querySelectorAll(".oneline-prompt-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".oneline-prompt-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    selectedOnelinePrompt = btn.dataset.prompt;
+    updatePlaceholder();
+    diaryInput.focus();
+  });
+});
 
 /* ── 글자 수 카운터 + ② 작성 중 상태 ─────────── */
 diaryInput.addEventListener("input", () => {
