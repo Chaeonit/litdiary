@@ -7,6 +7,56 @@ let selectedOnelinePrompt = null;
 let currentAnalysis = null;
 let currentText = "";
 
+/* ── 단어 배열 상태 ─────────────────────────────── */
+let arrangeAnswer = [];
+let arrangeBank = [];
+let arrangeSentence = [];
+let arrangeSentenceIndex = 0;
+
+/* ── 단어 배열 문장 데이터 ──────────────────────── */
+const ONELINE_SENTENCES = {
+  english: {
+    feeling: [
+      ["I", "felt", "so", "happy", "today"],
+      ["Today", "was", "a bit", "stressful", "for me"],
+      ["I", "was", "really", "excited", "today"],
+      ["I", "felt", "tired", "but", "grateful"],
+      ["Today", "made", "me", "feel", "proud"],
+      ["I", "couldn't stop", "smiling", "today"],
+      ["Today", "I", "felt", "a little", "nervous"],
+    ],
+    event: [
+      ["Today", "I", "went", "to", "school"],
+      ["I", "had lunch", "with", "a friend", "today"],
+      ["This morning", "I", "woke up", "really early"],
+      ["I", "finished", "my homework", "today"],
+      ["Today", "I", "tried", "something", "new"],
+      ["I", "stayed home", "all day", "today"],
+      ["Today", "I", "met", "an old friend"],
+    ]
+  },
+  chinese: {
+    feeling: [
+      ["今天", "我", "很", "开心"],
+      ["今天", "有点", "累", "但是", "很满足"],
+      ["我", "今天", "感到", "很", "兴奋"],
+      ["今天", "让", "我", "感到", "自豪"],
+      ["今天", "我", "有点", "紧张"],
+      ["今天", "我", "笑了", "很多次"],
+      ["今天", "的", "心情", "好极了"],
+    ],
+    event: [
+      ["今天", "我", "去了", "学校"],
+      ["我", "和朋友", "一起", "吃了", "午饭"],
+      ["今天", "早上", "我", "很早", "起床了"],
+      ["今天", "我", "完成了", "作业"],
+      ["今天", "我", "尝试了", "新的东西"],
+      ["我", "今天", "在家", "待了", "一整天"],
+      ["今天", "我", "遇见了", "老朋友"],
+    ]
+  }
+};
+
 /* ── 오늘의 질문 데이터 ─────────────────────────── */
 const DAILY_QUESTIONS = {
   easy: [
@@ -139,6 +189,7 @@ document.querySelectorAll(".lang-btn").forEach(btn => {
     selectedLang = btn.dataset.lang;
     selectedTopic = null;
     if (selectedMode === "guided" && selectedDifficulty) renderGuidedTopics();
+    if (selectedMode === "oneline" && selectedOnelinePrompt) showWordArrange(selectedOnelinePrompt);
     updatePlaceholder();
   });
 });
@@ -160,6 +211,7 @@ document.querySelectorAll(".mode-btn").forEach(btn => {
     guidedSection.classList.add("hidden");
     document.getElementById("guided-detail").classList.add("hidden");
     document.getElementById("guided-hint-section").classList.add("hidden");
+    document.getElementById("word-arrange-section").classList.add("hidden");
     document.querySelectorAll(".oneline-prompt-btn").forEach(b => b.classList.remove("active"));
 
     if (selectedMode === "oneline") {
@@ -272,12 +324,100 @@ function updatePlaceholder() {
   }
 }
 
+/* ── 단어 배열 게임 ─────────────────────────────── */
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function getArrangeSentence(promptType) {
+  const list = ONELINE_SENTENCES[selectedLang][promptType];
+  return list[arrangeSentenceIndex % list.length];
+}
+
+function showWordArrange(promptType) {
+  arrangeSentence = getArrangeSentence(promptType);
+  arrangeAnswer = [];
+  arrangeBank = shuffleArray(arrangeSentence.map((_, i) => i));
+  renderArrange();
+  document.getElementById("word-arrange-section").classList.remove("hidden");
+}
+
+function renderArrange() {
+  const answerEl = document.getElementById("arrange-answer");
+  const bankEl   = document.getElementById("arrange-bank");
+  const useBtn   = document.getElementById("arrange-use-btn");
+
+  // 답변 영역
+  answerEl.innerHTML = "";
+  if (arrangeAnswer.length === 0) {
+    answerEl.innerHTML = '<span class="arrange-placeholder">여기에 단어를 놓아보세요</span>';
+  } else {
+    arrangeAnswer.forEach((idx, pos) => {
+      const tile = document.createElement("button");
+      tile.className = "arrange-tile arrange-tile-placed";
+      tile.textContent = arrangeSentence[idx];
+      tile.addEventListener("click", () => {
+        arrangeAnswer.splice(pos, 1);
+        arrangeBank.push(idx);
+        renderArrange();
+      });
+      answerEl.appendChild(tile);
+    });
+  }
+
+  // 단어 뱅크
+  bankEl.innerHTML = "";
+  arrangeBank.forEach(idx => {
+    const tile = document.createElement("button");
+    tile.className = "arrange-tile";
+    tile.textContent = arrangeSentence[idx];
+    tile.addEventListener("click", () => {
+      arrangeBank.splice(arrangeBank.indexOf(idx), 1);
+      arrangeAnswer.push(idx);
+      renderArrange();
+    });
+    bankEl.appendChild(tile);
+  });
+
+  useBtn.disabled = arrangeBank.length > 0;
+}
+
+document.getElementById("arrange-reset-btn").addEventListener("click", () => {
+  arrangeAnswer = [];
+  arrangeBank = shuffleArray(arrangeSentence.map((_, i) => i));
+  renderArrange();
+});
+
+document.getElementById("arrange-other-btn").addEventListener("click", () => {
+  const list = ONELINE_SENTENCES[selectedLang][selectedOnelinePrompt];
+  arrangeSentenceIndex = (arrangeSentenceIndex + 1) % list.length;
+  showWordArrange(selectedOnelinePrompt);
+});
+
+document.getElementById("arrange-use-btn").addEventListener("click", () => {
+  const sentence = arrangeAnswer.map(i => arrangeSentence[i]).join(" ");
+  diaryInput.value = diaryInput.value ? diaryInput.value + " " + sentence : sentence;
+  charCount.textContent = diaryInput.value.length;
+  setCardState("writing");
+  diaryInput.focus();
+  arrangeAnswer = [];
+  arrangeBank = shuffleArray(arrangeSentence.map((_, i) => i));
+  renderArrange();
+});
+
 /* ── 한 줄 시작 프롬프트 ───────────────────────── */
 document.querySelectorAll(".oneline-prompt-btn").forEach(btn => {
   btn.addEventListener("click", () => {
     document.querySelectorAll(".oneline-prompt-btn").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
     selectedOnelinePrompt = btn.dataset.prompt;
+    arrangeSentenceIndex = 0;
+    showWordArrange(selectedOnelinePrompt);
     updatePlaceholder();
     diaryInput.focus();
   });

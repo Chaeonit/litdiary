@@ -61,6 +61,21 @@
             <button class="oneline-prompt-btn" data-prompt="feeling">💭 오늘 기분 한 줄 쓰기</button>
             <button class="oneline-prompt-btn" data-prompt="event">📅 오늘 한 일 한 줄 쓰기</button>
           </div>
+
+          <!-- 단어 배열 게임 -->
+          <div id="word-arrange-section" class="hidden">
+            <p class="arrange-label">단어 타일을 눌러 문장을 완성해보세요!</p>
+            <div id="arrange-answer" class="arrange-answer">
+              <span class="arrange-placeholder">여기에 단어를 놓아보세요</span>
+            </div>
+            <div id="arrange-bank" class="arrange-bank"></div>
+            <div class="arrange-actions">
+              <button id="arrange-reset-btn" class="arrange-ghost-btn">🔀 다시 섞기</button>
+              <button id="arrange-other-btn" class="arrange-ghost-btn">🎲 다른 문장</button>
+              <button id="arrange-use-btn" class="arrange-use-btn" disabled>일기에 추가하기 →</button>
+            </div>
+          </div>
+
           <p class="oneline-guide">1문장만 써도 시작 가능해요 ✨</p>
           <p class="oneline-tip">힌트나 가이드가 필요하시면 <strong>가이드 쓰기</strong>를 눌러주세요!</p>
         </div>
