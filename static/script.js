@@ -60,14 +60,26 @@ const TOPICS = {
 };
 
 /* ── DOM 참조 ──────────────────────────────────── */
-const diaryInput    = document.getElementById("diary-input");
-const charCount     = document.getElementById("char-count");
-const analyzeBtn    = document.getElementById("analyze-btn");
-const btnText       = analyzeBtn.querySelector(".btn-text");
-const btnLoading    = analyzeBtn.querySelector(".btn-loading");
-const feedbackSec   = document.getElementById("feedback-section");
-const saveBtn       = document.getElementById("save-btn");
-const saveMsg       = document.getElementById("save-msg");
+const diaryInput      = document.getElementById("diary-input");
+const charCount       = document.getElementById("char-count");
+const analyzeBtn      = document.getElementById("analyze-btn");
+const btnText         = analyzeBtn.querySelector(".btn-text");
+const btnLoading      = analyzeBtn.querySelector(".btn-loading");
+const feedbackSec     = document.getElementById("feedback-section");
+const saveBtn         = document.getElementById("save-btn");
+const saveMsg         = document.getElementById("save-msg");
+const writeCard       = document.getElementById("write-card");
+const analyzingOverlay = document.getElementById("analyzing-overlay");
+
+/* ── 카드 상태 관리 ─────────────────────────────── */
+function setCardState(state) {
+  writeCard.dataset.state = state;
+  if (state === "analyzing") {
+    analyzingOverlay.classList.add("visible");
+  } else {
+    analyzingOverlay.classList.remove("visible");
+  }
+}
 
 
 /* ── 언어 선택 ─────────────────────────────────── */
@@ -197,9 +209,11 @@ function updatePlaceholder() {
   }
 }
 
-/* ── 글자 수 카운터 ────────────────────────────── */
+/* ── 글자 수 카운터 + ② 작성 중 상태 ─────────── */
 diaryInput.addEventListener("input", () => {
-  charCount.textContent = diaryInput.value.length;
+  const len = diaryInput.value.length;
+  charCount.textContent = len;
+  setCardState(len > 0 ? "writing" : "idle");
 });
 
 /* ── AI 분석 요청 ───────────────────────────────── */
@@ -211,6 +225,7 @@ analyzeBtn.addEventListener("click", async () => {
   }
 
   setLoading(true);
+  setCardState("analyzing");
   feedbackSec.classList.add("hidden");
   saveMsg.classList.add("hidden");
 
@@ -232,6 +247,7 @@ analyzeBtn.addEventListener("click", async () => {
     currentAnalysis = data.analysis;
 
     renderFeedback(data);
+    setCardState("done");
     feedbackSec.classList.remove("hidden");
     feedbackSec.scrollIntoView({ behavior: "smooth", block: "start" });
 
@@ -537,6 +553,11 @@ function setLoading(on) {
   btnLoading.classList.toggle("hidden", !on);
   if (on) {
     btnLoading.innerHTML = '<span class="spinner"></span>분석 중...';
+  } else {
+    // analyzing 상태가 끝났지만 done으로 안 바뀐 경우(오류) → writing으로 복귀
+    if (writeCard.dataset.state === "analyzing") {
+      setCardState(diaryInput.value.trim() ? "writing" : "idle");
+    }
   }
 }
 

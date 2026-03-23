@@ -66,13 +66,14 @@ body {
   color: var(--warm-white);
 }
 .header-inner { position: relative; z-index: 1; }
-.logo-sub {
-  font-size: 0.78rem;
-  font-weight: 300;
-  opacity: .60;
-  margin-top: 4px;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
+.logo-tagline {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: 0.93rem;
+  font-style: italic;
+  opacity: .72;
+  margin-top: 6px;
+  letter-spacing: 0.4px;
+  color: var(--green-pale);
 }
 
 /* ── 메인 레이아웃 ────────────────────────────── */
@@ -352,6 +353,99 @@ body {
   font-weight: 700;
   margin-bottom: 10px;
   text-align: right;
+}
+
+/* ── write-card 상태 디자인 ──────────────────── */
+.write-card {
+  position: relative;
+  transition: border-color .35s, box-shadow .35s;
+}
+
+/* ② 작성 중 */
+.write-card[data-state="writing"] {
+  border-color: rgba(212,98,42,.42);
+  box-shadow: 0 0 0 4px rgba(212,98,42,.07), var(--shadow);
+}
+.write-card[data-state="writing"] .char-count {
+  color: var(--green-md);
+  font-weight: 700;
+}
+
+/* ③ 첨삭 중 */
+.write-card[data-state="analyzing"] {
+  border-color: rgba(212,98,42,.60);
+  animation: pulse-card 1.8s ease-in-out infinite;
+}
+@keyframes pulse-card {
+  0%,100% { box-shadow: 0 0 0 4px rgba(212,98,42,.07), var(--shadow); }
+  50%     { box-shadow: 0 0 0 8px rgba(212,98,42,.16), var(--shadow); }
+}
+
+/* ④ 결과 완료 */
+.write-card[data-state="done"] {
+  border-color: rgba(80,160,80,.45);
+  box-shadow: 0 0 0 4px rgba(80,160,80,.08), var(--shadow);
+}
+
+/* ── 첨삭 오버레이 ───────────────────────────── */
+.analyzing-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius);
+  background: rgba(255,252,248,.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .3s;
+}
+.analyzing-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+.analyzing-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+.analyzing-text {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: 1.15rem;
+  font-style: italic;
+  color: var(--green-dk);
+  letter-spacing: 0.3px;
+}
+.analyzing-dots { display: flex; gap: 9px; }
+.analyzing-dots span {
+  width: 11px; height: 11px;
+  border-radius: 50%;
+  background: var(--green-md);
+  animation: bounce-dot 1.2s ease-in-out infinite;
+}
+.analyzing-dots span:nth-child(2) { animation-delay: .22s; }
+.analyzing-dots span:nth-child(3) { animation-delay: .44s; }
+@keyframes bounce-dot {
+  0%,100% { transform: translateY(0); opacity: .45; }
+  50%     { transform: translateY(-9px); opacity: 1; }
+}
+
+/* ── 피드백 섹션 등장 애니메이션 ─────────────── */
+#feedback-section:not(.hidden) > .card {
+  animation: card-in .4s ease-out both;
+}
+#feedback-section:not(.hidden) > .card:nth-child(1) { animation-delay: .05s; }
+#feedback-section:not(.hidden) > .card:nth-child(2) { animation-delay: .12s; }
+#feedback-section:not(.hidden) > .card:nth-child(3) { animation-delay: .19s; }
+#feedback-section:not(.hidden) > .card:nth-child(4) { animation-delay: .26s; }
+#feedback-section:not(.hidden) > .card:nth-child(5) { animation-delay: .33s; }
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 /* ── 텍스트에리어 ─────────────────────────────── */

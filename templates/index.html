@@ -14,7 +14,7 @@
       <div class="logo">
         <span class="logo-text">LitDiary</span>
       </div>
-      <p class="logo-sub">AI와 함께하는 언어 학습 일기</p>
+      <p class="logo-tagline">Write daily, improve naturally.</p>
     </div>
   </header>
 
@@ -23,9 +23,17 @@
     <section>
 
       <!-- 입력 카드 -->
-      <div class="card write-card">
+      <div class="card write-card" id="write-card" data-state="idle">
         <div class="card-header">
           <h2>오늘의 일기</h2>
+        </div>
+
+        <!-- 첨삭 중 오버레이 -->
+        <div class="analyzing-overlay" id="analyzing-overlay">
+          <div class="analyzing-inner">
+            <div class="analyzing-dots"><span></span><span></span><span></span></div>
+            <p class="analyzing-text">AI가 첨삭 중이에요...</p>
+          </div>
         </div>
 
         <div class="lang-switcher">
