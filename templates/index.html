@@ -45,6 +45,33 @@
         <div class="mode-switcher">
           <button class="mode-btn active" data-mode="free">✍️ 자유 쓰기</button>
           <button class="mode-btn" data-mode="beginner">🌱 주제별 쓰기</button>
+          <button class="mode-btn" data-mode="question">💬 오늘의 질문</button>
+        </div>
+
+        <!-- 질문 선택 모드 -->
+        <div id="question-section" class="hidden">
+          <p class="topic-guide">난이도를 선택하세요</p>
+          <div class="difficulty-cards">
+            <button class="difficulty-card" data-level="easy">
+              <span class="diff-icon">🟢</span>
+              <span class="diff-label">쉬움</span>
+              <span class="diff-question" id="q-easy"></span>
+            </button>
+            <button class="difficulty-card" data-level="medium">
+              <span class="diff-icon">🟡</span>
+              <span class="diff-label">중간</span>
+              <span class="diff-question" id="q-medium"></span>
+            </button>
+            <button class="difficulty-card" data-level="hard">
+              <span class="diff-icon">🔴</span>
+              <span class="diff-label">어려움</span>
+              <span class="diff-question" id="q-hard"></span>
+            </button>
+          </div>
+          <div id="selected-question" class="selected-question hidden">
+            <span class="sq-icon"></span>
+            <p class="sq-text"></p>
+          </div>
         </div>
 
         <!-- 초보 모드: 주제 선택 + 힌트 -->
@@ -67,10 +94,19 @@
 
         <div class="char-count"><span id="char-count">0</span>자</div>
 
-        <button id="analyze-btn" class="btn btn-primary">
-          <span class="btn-text">🔍 AI 피드백 받기</span>
-          <span class="btn-loading hidden">분석 중...</span>
-        </button>
+        <div class="action-row">
+          <button id="analyze-btn" class="btn btn-primary">
+            <span class="btn-text">🔍 AI 피드백 받기</span>
+            <span class="btn-loading hidden">분석 중...</span>
+          </button>
+          <div class="expr-btns">
+            <button id="natural-btn" class="btn btn-expr">✨ 더 자연스럽게</button>
+            <button id="native-btn" class="btn btn-expr">🗣️ 네이티브 표현</button>
+          </div>
+        </div>
+
+        <!-- 표현 추천 결과 -->
+        <div id="expr-result" class="expr-result hidden"></div>
       </div>
 
       <!-- 피드백 영역 (분석 후 표시) -->

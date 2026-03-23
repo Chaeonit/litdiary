@@ -339,5 +339,44 @@ def save_diary_route():
     return jsonify({"success": True, "entry": entry})
 
 
+@app.route("/express", methods=["POST"])
+def express():
+    data = request.json
+    text = data.get("text", "").strip()
+    language = data.get("language", "english")
+    mode = data.get("mode", "natural")  # "natural" | "native"
+
+    if not text:
+        return jsonify({"error": "텍스트를 입력해주세요."}), 400
+
+    lang_name = "English" if language == "english" else "Chinese (Mandarin)"
+    if mode == "natural":
+        instruction = (
+            f"The user wrote the following {lang_name} text. "
+            "Find 2-3 sentences or phrases that sound unnatural or awkward, "
+            "and suggest more natural alternatives. "
+            "Return JSON: {\"suggestions\": [{\"original\": str, \"suggested\": str, \"reason_kr\": str}]}"
+        )
+    else:
+        instruction = (
+            f"The user wrote the following {lang_name} text. "
+            "Find 2-3 expressions and show how a native speaker would say the same thing more naturally or idiomatically. "
+            "Return JSON: {\"suggestions\": [{\"original\": str, \"suggested\": str, \"reason_kr\": str}]}"
+        )
+
+    try:
+        res = client.chat.completions.create(
+            model=MODEL,
+            messages=[
+                {"role": "system", "content": instruction + " All reason_kr must be in Korean."},
+                {"role": "user", "content": text}
+            ],
+            response_format={"type": "json_object"}
+        )
+        return jsonify(json.loads(res.choices[0].message.content))
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 if __name__ == "__main__":
     app.run(debug=True)

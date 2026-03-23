@@ -2,8 +2,42 @@
 let selectedLang = "english";
 let selectedMode = "free";
 let selectedTopic = null;
+let selectedDifficulty = null;
 let currentAnalysis = null;
 let currentText = "";
+
+/* ── 오늘의 질문 데이터 ─────────────────────────── */
+const DAILY_QUESTIONS = {
+  easy: [
+    "오늘 뭐 했어요?",
+    "오늘 먹은 음식 중 가장 맛있었던 건?",
+    "오늘 날씨는 어땠나요?",
+    "오늘 만난 사람이 있나요?",
+    "오늘 어디에 갔나요?"
+  ],
+  medium: [
+    "오늘 가장 기억에 남는 순간은?",
+    "오늘 배운 것이 있다면?",
+    "오늘 가장 힘들었던 순간은?",
+    "오늘 감사했던 일이 있나요?",
+    "오늘 가장 즐거웠던 시간은?"
+  ],
+  hard: [
+    "오늘 하루를 감정 중심으로 설명해보세요",
+    "오늘 당신이 내린 결정 중 가장 의미 있었던 것은?",
+    "오늘의 경험이 당신을 어떻게 성장시켰나요?",
+    "오늘 가장 복잡한 감정을 느낀 순간을 묘사해보세요",
+    "오늘 하루가 당신에게 어떤 의미였나요?"
+  ]
+};
+
+const DIFF_ICONS = { easy: "🟢", medium: "🟡", hard: "🔴" };
+
+function getTodayQuestion(level) {
+  const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+  const list = DAILY_QUESTIONS[level];
+  return list[dayOfYear % list.length];
+}
 
 /* ── 주제 & 힌트 데이터 ─────────────────────────── */
 const TOPICS = {
@@ -55,18 +89,50 @@ document.querySelectorAll(".mode-btn").forEach(btn => {
     btn.classList.add("active");
     selectedMode = btn.dataset.mode;
     selectedTopic = null;
+    selectedDifficulty = null;
 
     const beginnerSection = document.getElementById("beginner-section");
+    const questionSection = document.getElementById("question-section");
+
+    beginnerSection.classList.add("hidden");
+    questionSection.classList.add("hidden");
+    document.getElementById("hint-section").classList.add("hidden");
+    document.getElementById("selected-question").classList.add("hidden");
+
     if (selectedMode === "beginner") {
       beginnerSection.classList.remove("hidden");
       renderTopics();
-    } else {
-      beginnerSection.classList.add("hidden");
-      document.getElementById("hint-section").classList.add("hidden");
+    } else if (selectedMode === "question") {
+      questionSection.classList.remove("hidden");
+      renderDifficultyCards();
     }
     updatePlaceholder();
   });
 });
+
+/* ── 난이도 카드 렌더링 ──────────────────────────── */
+function renderDifficultyCards() {
+  ["easy", "medium", "hard"].forEach(level => {
+    document.getElementById(`q-${level}`).textContent = getTodayQuestion(level);
+  });
+
+  document.querySelectorAll(".difficulty-card").forEach(card => {
+    card.classList.toggle("active", card.dataset.level === selectedDifficulty);
+    card.onclick = () => {
+      selectedDifficulty = card.dataset.level;
+      renderDifficultyCards();
+      showSelectedQuestion(selectedDifficulty);
+      updatePlaceholder();
+    };
+  });
+}
+
+function showSelectedQuestion(level) {
+  const box = document.getElementById("selected-question");
+  box.querySelector(".sq-icon").textContent = DIFF_ICONS[level];
+  box.querySelector(".sq-text").textContent = getTodayQuestion(level);
+  box.classList.remove("hidden");
+}
 
 /* ── 주제 렌더링 ────────────────────────────────── */
 function renderTopics() {
@@ -117,20 +183,17 @@ function insertAtCursor(el, text) {
 
 /* ── 플레이스홀더 업데이트 ──────────────────────── */
 function updatePlaceholder() {
+  const lang = selectedLang === "english" ? "영어" : "중국어";
   if (selectedMode === "free") {
-    diaryInput.placeholder = selectedLang === "english"
-      ? "오늘 있었던 일을 영어로 자유롭게 써보세요..."
-      : "오늘 있었던 일을 중국어로 자유롭게 써보세요...";
-  } else {
-    if (!selectedTopic) {
-      diaryInput.placeholder = selectedLang === "english"
-        ? "위에서 주제를 고르면 힌트 단어가 나와요!"
-        : "위에서 주제를 고르면 힌트 단어가 나와요!";
-    } else {
-      diaryInput.placeholder = selectedLang === "english"
-        ? `'${selectedTopic.label}' 주제로 3문장 정도 써보세요. 힌트 단어를 활용해봐요!`
-        : `'${selectedTopic.label}' 주제로 3문장 정도 써보세요. 힌트 단어를 활용해봐요!`;
-    }
+    diaryInput.placeholder = `오늘 있었던 일을 ${lang}로 자유롭게 써보세요...`;
+  } else if (selectedMode === "beginner") {
+    diaryInput.placeholder = selectedTopic
+      ? `'${selectedTopic.label}' 주제로 3문장 정도 써보세요. 힌트 단어를 활용해봐요!`
+      : "위에서 주제를 고르면 힌트 단어가 나와요!";
+  } else if (selectedMode === "question") {
+    diaryInput.placeholder = selectedDifficulty
+      ? `위 질문에 대한 답을 ${lang}로 써보세요...`
+      : "난이도를 선택하면 오늘의 질문이 나와요!";
   }
 }
 
@@ -293,6 +356,50 @@ document.getElementById("check-quiz-btn").addEventListener("click", () => {
     }
   });
 });
+
+/* ── 표현 추천 ─────────────────────────────────── */
+async function fetchExpress(mode) {
+  const text = diaryInput.value.trim();
+  if (!text) { alert("먼저 일기를 써주세요."); return; }
+
+  const naturalBtn = document.getElementById("natural-btn");
+  const nativeBtn  = document.getElementById("native-btn");
+  const resultBox  = document.getElementById("expr-result");
+
+  naturalBtn.disabled = true;
+  nativeBtn.disabled  = true;
+  resultBox.innerHTML = '<p style="font-size:.85rem;color:var(--muted);padding:4px 0;">분석 중...</p>';
+  resultBox.classList.remove("hidden");
+
+  try {
+    const res = await fetch("/express", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text, language: selectedLang, mode })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+
+    const title = mode === "natural" ? "✨ 더 자연스러운 표현" : "🗣️ 네이티브 표현";
+    const items = (data.suggestions || []).map(s => `
+      <div class="expr-item">
+        <div class="expr-original">${escHtml(s.original)}</div>
+        <div class="expr-suggested">${escHtml(s.suggested)}</div>
+        <div class="expr-reason">${escHtml(s.reason_kr)}</div>
+      </div>
+    `).join("");
+
+    resultBox.innerHTML = `<div class="expr-result-title">${title}</div>${items || "<p style='font-size:.85rem;color:var(--muted)'>추천할 표현이 없어요!</p>"}`;
+  } catch (e) {
+    resultBox.innerHTML = `<p style="font-size:.85rem;color:#A04040;">오류: ${escHtml(e.message)}</p>`;
+  } finally {
+    naturalBtn.disabled = false;
+    nativeBtn.disabled  = false;
+  }
+}
+
+document.getElementById("natural-btn").addEventListener("click", () => fetchExpress("natural"));
+document.getElementById("native-btn").addEventListener("click",  () => fetchExpress("native"));
 
 /* ── LocalStorage 유틸 ──────────────────────────── */
 const STORAGE_KEY = "litdiary_entries";
